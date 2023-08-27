@@ -25,6 +25,7 @@ phases:
       # Push the Docker image to Amazon ECR
       - echo Build completed on `date`
       - echo Pushing the Docker images...
+      - echo $REPOSITORY_URI
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
 #      - docker tag ecsflaskapp ${account_id}.dkr.ecr.us-east-2.amazonaws.com/ecs-flaskapp:${CODEBUILD_RESOLVED_SOURCE_VERSION}-v${CODEBUILD_BUILD_NUMBER}
