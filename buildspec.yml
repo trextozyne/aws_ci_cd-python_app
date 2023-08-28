@@ -11,33 +11,31 @@ phases:
       - REPOSITORY_URI=$(echo $REPOSITORY_DOMAIN_NAME'/'$IMAGE_REPO_NAME)
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      
+
   build:
     commands:
-      # Build the Docker image
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      # Check if image exists in ECR
+      - if ! aws ecr describe-images --repository-name $IMAGE_REPO_NAME --image-ids imageTag=$IMAGE_TAG; then
+        echo "Image does not exist in ECR. Building and pushing...";
+        # Build the Docker image
+        echo Build started on `date`
+        echo Building the Docker image...
+        docker build -t $REPOSITORY_URI:latest .
+        docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+        
+        # Push the Docker image to Amazon ECR
+        echo Build completed on `date`
+        echo Pushing the Docker images...
+        echo $REPOSITORY_URI
+        docker push $REPOSITORY_URI:latest
+        docker push $REPOSITORY_URI:$IMAGE_TAG
+        else
+        echo "Image already exists in ECR. Skipping build.";
+        fi
 
   post_build:
     commands:
-      # Push the Docker image to Amazon ECR
-      - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - echo $REPOSITORY_URI
-      - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-#      - docker tag ecsflaskapp ${account_id}.dkr.ecr.us-east-2.amazonaws.com/ecs-flaskapp:${CODEBUILD_RESOLVED_SOURCE_VERSION}-v${CODEBUILD_BUILD_NUMBER}
-#      - docker push ${account_id}.dkr.ecr.us-east-2.amazonaws.com/ecs-flaskapp:${CODEBUILD_RESOLVED_SOURCE_VERSION}-v${CODEBUILD_BUILD_NUMBER}
       - aws ecs update-service --cluster ECS-Cluster-FlaskApp --service ECS-Service --force-new-deployment
-
-#artifacts:
-#  files:
-#    - '**/*'  # Include all files in the build directory
-#  discard-paths: no  # Keep directory structure when packaging artifacts
-#    # You don't need any artifacts, so we leave this section empty
-#  discard-paths: yes
 
 artifacts:
   files:
