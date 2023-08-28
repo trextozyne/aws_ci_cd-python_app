@@ -15,8 +15,7 @@ phases:
   build:
     commands:
       # Check if image exists in ECR
-      - |
-        if ! aws ecr describe-images --repository-name $IMAGE_REPO_NAME --image-ids imageTag=$IMAGE_TAG; then
+      - if ! aws ecr describe-images --repository-name $IMAGE_REPO_NAME --image-ids imageTag=$IMAGE_TAG; then
         echo "Image does not exist in ECR. Building and pushing...";
         # Build the Docker image
         echo Build started on `date`
