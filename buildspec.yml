@@ -32,7 +32,14 @@ phases:
 #      - docker push ${account_id}.dkr.ecr.us-east-2.amazonaws.com/ecs-flaskapp:${CODEBUILD_RESOLVED_SOURCE_VERSION}-v${CODEBUILD_BUILD_NUMBER}
       - aws ecs update-service --cluster ECS-Cluster-FlaskApp --service ECS-Service --force-new-deployment
 
+#artifacts:
+#  files:
+#    - '**/*'  # Include all files in the build directory
+#  discard-paths: no  # Keep directory structure when packaging artifacts
+#    # You don't need any artifacts, so we leave this section empty
+#  discard-paths: yes
+
 artifacts:
   files:
-    # You don't need any artifacts, so we leave this section empty
-  discard-paths: yes
+    - '**/*'
+  base-directory: 'dist'
